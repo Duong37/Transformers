@@ -1,7 +1,7 @@
 import torch
 from torch import nn
-import self_attention_old
-import transformer_block_old as tbo
+# import self_attention_old
+# import transformer_block_old as tbo
 import transformer_block as tb
 
 

@@ -1,10 +1,8 @@
-
 import io
 import os
 import torch
 from tqdm.notebook import tqdm
-from torch.utils.data import Dataset, DataLoader
-
+from torch.utils.data import Dataset
 
 class imdb_dataset(Dataset):
     def __init__(self, path, use_tokenizer):
@@ -45,7 +43,5 @@ class Gpt2ClassificationCollator(object):
         # Call tokenizer on all texts to convert into tensors of numbers with
         inputs = self.use_tokenizer(text=texts, return_tensors="pt", padding=True, truncation=True)
         inputs.update({'labels': torch.tensor(labels)})
-
-        #del inputs['attention_mask']
 
         return inputs

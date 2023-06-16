@@ -1,12 +1,6 @@
-from transformer_util import mask_
-
-import torch
 from torch import nn
-import torch.nn.functional as F
-
-import random, math
-from self_attention import  SelfAttentionWide, SelfAttentionNarrow
-from self_attention_old import SelfAttention
+from self_attention import SelfAttentionWide, SelfAttentionNarrow
+# from self_attention_old import SelfAttention
 class TransformerBlock(nn.Module):
 
     def __init__(self, emb, heads, mask, ff_hidden_mult=4, dropout=0.0, wide=True):

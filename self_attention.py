@@ -4,7 +4,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-import random, math
+# import random, math
 
 class SelfAttentionWide(nn.Module):
     def __init__(self, emb, heads=8, mask=False):

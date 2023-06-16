@@ -2,7 +2,7 @@ from transformers import GPT2Config, GPT2Tokenizer, GPT2LMHeadModel, modeling_ut
 import torch
 from torch import nn
 import adapter
-import transformer_block_old
+# import transformer_block_old
 
 
 class NoParam(nn.Module):
