@@ -2,6 +2,7 @@ import torch
 from ml_things import plot_dict, plot_confusion_matrix
 from tqdm.notebook import tqdm
 from torch.utils.data import DataLoader
+import numpy as np
 
 from sklearn.metrics import classification_report, accuracy_score
 
@@ -20,7 +21,7 @@ torch.cuda.empty_cache()
 
 nblocks = 3
 epochs = 3
-batch_size = 4
+batch_size = 32
 valid_epoch_cnt = 1
 train_epoch_cnt = 1
 test_epoch_cnt = 1
@@ -112,8 +113,8 @@ def train(dataloader, optimizer_, device_):
 
     print("Train Epoch:", train_epoch_cnt)
     for batch in tqdm(dataloader, total=len(dataloader)):
-        # if batch_cnt > 5:  #for testing purposes
-        #     break
+        if batch_cnt > 1:  #for testing purposes
+            break
         print('train batch:', batch_cnt)
         labels = batch['labels']
         inputs = batch['input_ids']
@@ -158,7 +159,7 @@ def train(dataloader, optimizer_, device_):
     if adapters:
         avg_epoch_loss = total_loss / len(dataloader)
         acc = 100 * correct / total
-        print('avg_loss, acc of train epoch: ')
+        print('avg_loss, acc of train epoch:')
         print(avg_epoch_loss)
         print(acc)
         return acc, avg_epoch_loss
@@ -186,8 +187,8 @@ def validation(dataloader, device_, val):
         print("Test Epoch:", test_epoch_cnt)
 
     for batch in tqdm(dataloader, total=len(dataloader)):
-        # if batch_cnt > 5:  #for testing purposes
-        #     break
+        if batch_cnt > 1:  #for testing purposes
+            break
         if val:
             print('valid batch:', batch_cnt)
         else:
@@ -195,12 +196,14 @@ def validation(dataloader, device_, val):
         labels = batch['labels']
         inputs = batch['input_ids']
         if adapters:
+            true_labels += batch['labels'].numpy().flatten().tolist()   #test set
             outputs = model(inputs)
             loss = loss_fn(outputs, labels)
             total_loss += loss.item()
 
             # accuracy
             cls = torch.argmax(outputs, dim=1)
+            predictions_labels += cls  #test set
             correct += sum(cls == labels).item()
             total += inputs.size(0)
         else:
@@ -229,12 +232,14 @@ def validation(dataloader, device_, val):
         avg_epoch_loss = total_loss / len(dataloader)
         acc = 100 * correct / total
         if val:
-            print('avg_loss, acc of val epoch: ')
+            print('avg_loss, acc of val epoch:')
+            print(avg_epoch_loss)
+            print(acc)
+            return acc, avg_epoch_loss
         else:
-            print('avg_loss, acc of test epoch: ')
-        print(avg_epoch_loss)
-        print(acc)
-        return acc, avg_epoch_loss
+            print('avg_loss, acc of test epoch:')   #test set
+            return true_labels, predictions_labels, avg_epoch_loss
+
     else:
         avg_epoch_loss = total_loss / len(dataloader)
         return true_labels, predictions_labels, avg_epoch_loss
@@ -263,6 +268,7 @@ scheduler = get_linear_schedule_with_warmup(optimizer,
 all_loss = {'train_loss': [], 'val_loss': []}
 all_acc = {'train_acc': [], 'val_acc': []}
 
+#true_labels_test, predictions_labels_test, avg_test_epoch_loss = [],[],0
 
 for epoch in tqdm(range(epochs)):
     print()
@@ -271,6 +277,9 @@ for epoch in tqdm(range(epochs)):
         train_acc, train_loss = train(train_dataloader, optimizer, device)
         print('Validation on batches...')
         val_acc, val_loss = validation(valid_dataloader, device, True)
+        print('Testing on batches...')
+
+
     else:
         print('Training on batches...')
         train_labels, train_predict, train_loss = train(train_dataloader, optimizer, device)
@@ -278,7 +287,7 @@ for epoch in tqdm(range(epochs)):
         print('Validation on batches...')
         valid_labels, valid_predict, val_loss = validation(valid_dataloader, device, True)
         val_acc = accuracy_score(valid_labels, valid_predict)
-
+        print('Testing on batches...')
 
     # Print loss and accuracy values to see how training evolves.
     print("  train_loss: %.5f - val_loss: %.5f - train_acc: %.5f - valid_acc: %.5f" % (
@@ -291,15 +300,20 @@ for epoch in tqdm(range(epochs)):
     all_acc['train_acc'].append(train_acc)
     all_acc['val_acc'].append(val_acc)
 
-# Plot loss curves.
-plot_dict(all_loss, use_xlabel='Epochs', use_ylabel='Value', use_linestyles=['-', '--'])
-
-# Plot accuracy curves.
-plot_dict(all_acc, use_xlabel='Epochs', use_ylabel='Value', use_linestyles=['-', '--'])
-
 # Get prediction form model on validation data. This is where you should use
 # your test data.
 true_labels_test, predictions_labels_test, avg_test_epoch_loss = validation(valid_dataloader, device, False)
+
+np.savetxt('results.txt', all_loss['train_loss'])
+np.savetxt('results.txt', all_loss['val_loss'])
+np.savetxt('results.txt', all_acc['train_acc'])
+np.savetxt('results.txt', all_acc['val_acc'])
+
+# Plot loss curves.
+plot1 = plot_dict(all_loss, use_xlabel='Epochs', use_ylabel='Value', use_linestyles=['-', '--'])
+
+# Plot accuracy curves.
+plot2 = plot_dict(all_acc, use_xlabel='Epochs', use_ylabel='Value', use_linestyles=['-', '--'])
 
 # Create the evaluation report.
 evaluation_report = classification_report(true_labels_test, predictions_labels_test, labels=list(labels_ids.values()),
@@ -313,3 +327,5 @@ plot_confusion_matrix(y_true=true_labels_test, y_pred=predictions_labels_test,
                       classes=list(labels_ids.keys()), normalize=True,
                       magnify=0.1,
                       )
+
+
