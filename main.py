@@ -1,7 +1,7 @@
 import torch
 from ml_things import plot_dict, plot_confusion_matrix
 from tqdm.notebook import tqdm
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 from sklearn.metrics import classification_report, accuracy_score
 
@@ -9,10 +9,10 @@ from transformers import GPT2Config, GPT2Tokenizer, GPT2LMHeadModel, GPT2ForSequ
     get_linear_schedule_with_warmup
 import data
 import gpt2wrapper
-import transformer_block_old
-from torch import nn
-import adapter
-import insert_adapters
+# import transformer_block_old
+# from torch import nn
+# import adapter
+# import insert_adapters
 
 torch.cuda.empty_cache()
 
