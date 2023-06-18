@@ -23,14 +23,14 @@ import adapter
 # global model
 # 1e-4 for adapter tuning
 # 2e-5 for without adapters
-wandb.init(name="none_test1",
+wandb.init(name="adapter_none_1",
            project="Adapter-based tuning of GPT-2",
            entity="d-vuhai",
-           config={"learning_rate": 1e-4, "batch_size": 32},
+           config={"learning_rate": 2e-5, "batch_size": 32},
            )
 
 config = wandb.config
-config.learning_rate = 1e-4
+config.learning_rate = 2e-5
 
 nblocks = 3
 epochs = 3

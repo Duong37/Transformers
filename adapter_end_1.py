@@ -39,9 +39,9 @@ valid_epoch_cnt = 1
 train_epoch_cnt = 1
 test_epoch_cnt = 1
 
-freeze_weights = False  # freeze gpt2 weights
+freeze_weights = True  # freeze gpt2 weights
 adapters = True        # use wrapper
-insert_at = 'none'
+insert_at = 'end'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # device = torch.device('cpu')

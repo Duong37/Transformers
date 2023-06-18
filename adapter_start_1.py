@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from transformers import GPT2Config, GPT2Tokenizer, GPT2LMHeadModel, GPT2ForSequenceClassification, \
     get_linear_schedule_with_warmup
 import data
-#import gpt2wrapper
+# import gpt2wrapper
 from torch import nn
 import adapter
 
@@ -23,7 +23,7 @@ import adapter
 # global model
 # 1e-4 for adapter tuning
 # 2e-5 for without adapters
-wandb.init(name="none_test1",
+wandb.init(name="adapter_start_1",
            project="Adapter-based tuning of GPT-2",
            entity="d-vuhai",
            config={"learning_rate": 1e-4, "batch_size": 32},
@@ -39,9 +39,9 @@ valid_epoch_cnt = 1
 train_epoch_cnt = 1
 test_epoch_cnt = 1
 
-freeze_weights = False  # freeze gpt2 weights
-adapters = True        # use wrapper
-insert_at = 'none'
+freeze_weights = True  # freeze gpt2 weights
+adapters = True  # use wrapper
+insert_at = 'start'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # device = torch.device('cpu')
