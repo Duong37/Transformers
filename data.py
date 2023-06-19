@@ -36,12 +36,14 @@ class Gpt2ClassificationCollator(object):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def __call__(self, sequences):
-        texts = [sequence['text'] for sequence in sequences]
-        labels = [sequence['label'] for sequence in sequences]
+        reviews = [sequence[0] for sequence in sequences]
+        labels = [sequence[1] for sequence in sequences]
         # Encode all labels using label encoder.
         labels = [self.labels_encoder[label] for label in labels]
+
         # Call tokenizer on all texts to convert into tensors of numbers with
-        inputs = self.use_tokenizer(text=texts, return_tensors="pt", padding=True, truncation=True)
+        inputs = self.use_tokenizer(text=reviews, return_tensors="pt", padding=True, truncation=True)
+
         inputs.update({'labels': torch.tensor(labels)})
 
         return inputs
