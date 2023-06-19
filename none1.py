@@ -205,7 +205,7 @@ else:
 gpt2_classificaiton_collator = data.Gpt2ClassificationCollator(use_tokenizer=tokenizer,
                                                                labels_encoder=labels_ids)
 
-data_path = 'IMDB Dataset.csv'
+data_path = '/var/scratch/dvi230/Transformers/IMDBDataset.csv'
 df = pd.read_csv(data_path)
 
 # Select 4500 positive and 4500 negative samples with labels
