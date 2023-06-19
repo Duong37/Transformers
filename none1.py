@@ -273,7 +273,7 @@ def train(dataloader, optimizer_, device_):
     for batch in tqdm(dataloader, total=len(dataloader)):
         # if batch_cnt > 2:  # for testing purposes
         #     break
-        if batch_cnt == 1 or batch_cnt % 100 == 0 or batch_cnt == len(dataloader):
+        if batch_cnt == 1 or batch_cnt % 10 == 0 or batch_cnt == len(dataloader):
             print('train batch:', batch_cnt)
         labels = batch['labels']
         inputs = batch['input_ids']
@@ -352,10 +352,10 @@ def validation(dataloader, device_, val):
         # if batch_cnt > 2:  # for testing purposes
         #     break
         if val:
-            if batch_cnt == 1 or batch_cnt % 100 == 0 or batch_cnt == len(dataloader) - 1:
+            if batch_cnt == 1 or batch_cnt % 10 == 0 or batch_cnt == len(dataloader) - 1:
                 print('valid batch:', batch_cnt)
         else:
-            if batch_cnt == 1 or batch_cnt % 100 == 0 or batch_cnt == len(dataloader) - 1:
+            if batch_cnt == 1 or batch_cnt % 10 == 0 or batch_cnt == len(dataloader) - 1:
                 print('test batch:', batch_cnt)
         labels = batch['labels']
         inputs = batch['input_ids']
