@@ -15,7 +15,7 @@ from torch import nn
 import adapter
 import pandas as pd
 
-# torch.cuda.empty_cache()
+torch.cuda.empty_cache()
 
 # global model
 # 1e-4 for adapter tuning
@@ -23,11 +23,11 @@ import pandas as pd
 wandb.init(name="start1",
            project="Adapter-based tuning of GPT-2",
            entity="d-vuhai",
-           config={"learning_rate": 1e-4, "batch_size": 32},
+           config={"learning_rate": 0.1, "batch_size": 32},
            )
 
 config = wandb.config
-config.learning_rate = 1e-4
+config.learning_rate = 0.1
 
 '''
 check batch_size
@@ -134,7 +134,7 @@ class gpt2Wrapper(nn.Module):
                 print('inserting block at', i + 10)
                 block = self.iblocks[i]
                 h.insert(i + 10, block)
-        elif insert_at == 'everywhere':
+        elif insert_at == 'every':
             for i in range(iblocks - 1, -1, -1):
                 print('inserting block at', i * 6)
                 block = self.iblocks[i]
@@ -206,17 +206,18 @@ gpt2_classificaiton_collator = data.Gpt2ClassificationCollator(use_tokenizer=tok
                                                                labels_encoder=labels_ids)
 
 data_path = '/var/scratch/dvi230/Transformers/IMDB Dataset.csv'
+#data_path = 'IMDB Dataset.csv'
 df = pd.read_csv(data_path)
 
 # Select 4500 positive and 4500 negative samples with labels
-positive_samples = df[df['sentiment'] == 'positive'].sample(n=3600, random_state=42)
-negative_samples = df[df['sentiment'] == 'negative'].sample(n=3600, random_state=42)
+positive_samples = df[df['sentiment'] == 'positive'].sample(n=5000, random_state=42)
+negative_samples = df[df['sentiment'] == 'negative'].sample(n=5000, random_state=42)
 
 # Combine positive and negative samples
 combined_samples = pd.concat([positive_samples, negative_samples], ignore_index=True)
 
 # Split into train, validation, and test sets
-train_samples, temp_samples = train_test_split(combined_samples, test_size=2 / 3,
+train_samples, temp_samples = train_test_split(combined_samples, test_size= 1 / 5,
                                                stratify=combined_samples['sentiment'], random_state=42)
 valid_samples, test_samples = train_test_split(temp_samples, test_size=0.5, stratify=temp_samples['sentiment'],
                                                random_state=42)
@@ -365,7 +366,10 @@ def validation(dataloader, device_, val):
                 outputs = model(inputs)
                 loss = loss_fn(outputs, labels)
                 total_loss += loss.item()
-                wandb.log({'epoch': valid_epoch_cnt, 'val_loss': loss.item()})
+                if val:
+                    wandb.log({'epoch': valid_epoch_cnt, 'val_loss': loss.item()})
+                else:
+                    wandb.log({'epoch': test_epoch_cnt, 'test_loss': loss.item()})
 
                 # accuracy
                 cls = torch.argmax(outputs, dim=1)
@@ -403,7 +407,10 @@ def validation(dataloader, device_, val):
             wandb.log({'epoch': valid_epoch_cnt, 'val_acc': acc})
             return acc, avg_epoch_loss
         else:
-            print('avg_loss, acc of test epoch:')  # test set
+            print('avg_loss, acc of test epoch:')
+            print(avg_epoch_loss)
+            print(acc)
+            wandb.log({'epoch': test_epoch_cnt, 'test_acc': acc})
             return true_labels, predictions_labels, avg_epoch_loss
 
     else:
@@ -414,9 +421,9 @@ def validation(dataloader, device_, val):
 loss_fn = torch.nn.CrossEntropyLoss()
 
 if insert_at =='none':
-    learning_rate = 2e-5
+    learning_rate = 0.01
 else:
-    learning_rate = 1e-4
+    learning_rate = 0.01
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)  # optimizer
 # optimizer = AdamW(model.parameters(),
 #                   lr = 2e-5, # default is 5e-5, our notebook had 2e-5

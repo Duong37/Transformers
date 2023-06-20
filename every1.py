@@ -15,7 +15,7 @@ from torch import nn
 import adapter
 import pandas as pd
 
-# torch.cuda.empty_cache()
+torch.cuda.empty_cache()
 
 # global model
 # 1e-4 for adapter tuning
@@ -23,11 +23,11 @@ import pandas as pd
 wandb.init(name="every1",
            project="Adapter-based tuning of GPT-2",
            entity="d-vuhai",
-           config={"learning_rate": 0.01, "batch_size": 32},
+           config={"learning_rate": 0.1, "batch_size": 32},
            )
 
 config = wandb.config
-config.learning_rate = 0.01
+config.learning_rate = 0.1
 
 '''
 check batch_size
@@ -93,7 +93,7 @@ class gpt2Wrapper(nn.Module):
 
         self.model_config = GPT2Config.from_pretrained(model_name, num_labels=self.n_labels)
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-        self.tokenizer.padding_side = "right"
+        self.tokenizer.padding_side = "left"
         self.tokenizer.pad_token = self.tokenizer.eos_token
 
         # self.model = GPT2LMHeadModel.from_pretrained(model_name, config = self.model_config)
@@ -134,7 +134,7 @@ class gpt2Wrapper(nn.Module):
                 print('inserting block at', i + 10)
                 block = self.iblocks[i]
                 h.insert(i + 10, block)
-        elif insert_at == 'everywhere':
+        elif insert_at == 'every':
             for i in range(iblocks - 1, -1, -1):
                 print('inserting block at', i * 6)
                 block = self.iblocks[i]
@@ -206,11 +206,12 @@ gpt2_classificaiton_collator = data.Gpt2ClassificationCollator(use_tokenizer=tok
                                                                labels_encoder=labels_ids)
 
 data_path = '/var/scratch/dvi230/Transformers/IMDB Dataset.csv'
+#data_path = 'IMDB Dataset.csv'
 df = pd.read_csv(data_path)
 
 # Select 4500 positive and 4500 negative samples with labels
-positive_samples = df[df['sentiment'] == 'positive'].sample(n=3000, random_state=42)
-negative_samples = df[df['sentiment'] == 'negative'].sample(n=3000, random_state=42)
+positive_samples = df[df['sentiment'] == 'positive'].sample(n=5000, random_state=42)
+negative_samples = df[df['sentiment'] == 'negative'].sample(n=5000, random_state=42)
 
 # Combine positive and negative samples
 combined_samples = pd.concat([positive_samples, negative_samples], ignore_index=True)
@@ -420,9 +421,9 @@ def validation(dataloader, device_, val):
 loss_fn = torch.nn.CrossEntropyLoss()
 
 if insert_at =='none':
-    learning_rate = 1e-4
+    learning_rate = 0.1
 else:
-    learning_rate = 1e-4
+    learning_rate = 0.1
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)  # optimizer
 # optimizer = AdamW(model.parameters(),
 #                   lr = 2e-5, # default is 5e-5, our notebook had 2e-5
